@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
-	<artifactId>springjwtrole</artifactId>
+	<artifactId>makehollywood</artifactId>
 	<version>1.0.0</version>
-	<name>springjwtrole</name>
-	<description>Java + Spring Boot + JWT + role</description>
+	<name>makehollywood</name>
+	<description>Make Hollywood — AI-powered shorts creator</description>
 	<url/>
 	<licenses>
 		<license/>
