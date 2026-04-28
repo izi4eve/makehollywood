@@ -125,6 +125,18 @@ public class AuthApiController {
         return ResponseEntity.ok(Map.of("message", "Password changed"));
     }
 
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
+        String token = body.get("token");
+        String newPassword = body.get("newPassword");
+        try {
+            userService.resetPassword(token, newPassword, "en");
+            return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @DeleteMapping("/delete-account")
     public ResponseEntity<?> deleteAccount(Authentication authentication) {
         String email = authentication.getName();

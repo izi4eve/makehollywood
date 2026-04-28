@@ -6,6 +6,7 @@ import com.makehollywood.util.LocaleContext;
 import com.makehollywood.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -36,8 +37,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
-                user.getPassword(),
-                List.of(user.getRole()) // use List.of for creating list of roles
+                user.getPassword() != null ? user.getPassword() : "",  // ← пустая строка вместо null
+                List.of(new SimpleGrantedAuthority(user.getRole().getAuthority()))
         );
     }
 }
