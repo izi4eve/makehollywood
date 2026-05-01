@@ -1,10 +1,11 @@
 package com.makehollywood.api;
 
-import com.makehollywood.dto.IdeaDto;
+import com.makehollywood.dto.ScriptDto;
 import com.makehollywood.model.User;
 import com.makehollywood.repository.UserRepository;
 import com.makehollywood.service.GroqClient;
 import com.makehollywood.service.IdeaService;
+import com.makehollywood.service.ScriptService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,11 +16,11 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/ideas")
+@RequestMapping("/api/scripts")
 @RequiredArgsConstructor
-public class IdeaApiController {
+public class ScriptApiController {
 
-    private final IdeaService ideaService;
+    private final ScriptService scriptService;
     private final UserRepository userRepository;
 
     private User getUser(UserDetails userDetails) {
@@ -27,13 +28,13 @@ public class IdeaApiController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    @PostMapping("/extract")
-    public ResponseEntity<?> extract(
-            @RequestBody IdeaDto.ExtractRequest req,
+    @PostMapping("/generate")
+    public ResponseEntity<?> generate(
+            @RequestBody ScriptDto.GenerateRequest req,
             @AuthenticationPrincipal UserDetails userDetails) {
         try {
             getUser(userDetails);
-            return ResponseEntity.ok(ideaService.extract(req.getText(), req.getInputLang(), req.getOutputLang()));
+            return ResponseEntity.ok(scriptService.generate(req));
         } catch (IdeaService.ContentModerationException e) {
             return ResponseEntity.status(422).body(Map.of("error", "moderation"));
         } catch (GroqClient.GroqRateLimitException e) {
@@ -41,44 +42,54 @@ public class IdeaApiController {
         } catch (GroqClient.GroqTimeoutException e) {
             return ResponseEntity.status(504).body(Map.of("error", "timeout"));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", "extraction_failed"));
+            return ResponseEntity.status(500).body(Map.of("error", "generation_failed"));
+        }
+    }
+
+    @PostMapping("/refine")
+    public ResponseEntity<?> refine(
+            @RequestBody ScriptDto.RefineRequest req,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            getUser(userDetails);
+            return ResponseEntity.ok(scriptService.refine(req));
+        } catch (IdeaService.ContentModerationException e) {
+            return ResponseEntity.status(422).body(Map.of("error", "moderation"));
+        } catch (GroqClient.GroqRateLimitException e) {
+            return ResponseEntity.status(429).body(Map.of("error", "rate_limit"));
+        } catch (GroqClient.GroqTimeoutException e) {
+            return ResponseEntity.status(504).body(Map.of("error", "timeout"));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "refinement_failed"));
         }
     }
 
     @PostMapping
-    public ResponseEntity<IdeaDto.Response> save(
-            @RequestBody IdeaDto.SaveRequest req,
+    public ResponseEntity<ScriptDto.Response> save(
+            @RequestBody ScriptDto.SaveRequest req,
             @AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(ideaService.save(req, getUser(userDetails)));
+        return ResponseEntity.ok(scriptService.save(req, getUser(userDetails)));
     }
 
     @GetMapping
-    public ResponseEntity<List<IdeaDto.Response>> getAll(
+    public ResponseEntity<List<ScriptDto.Response>> getAll(
             @AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(ideaService.getAll(getUser(userDetails)));
+        return ResponseEntity.ok(scriptService.getAll(getUser(userDetails)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<IdeaDto.Response> update(
+    public ResponseEntity<ScriptDto.Response> update(
             @PathVariable Long id,
-            @RequestBody IdeaDto.UpdateRequest req,
+            @RequestBody ScriptDto.UpdateRequest req,
             @AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(ideaService.update(id, req, getUser(userDetails)));
-    }
-
-    @PatchMapping("/{id}/used")
-    public ResponseEntity<IdeaDto.Response> markUsed(
-            @PathVariable Long id,
-            @RequestBody IdeaDto.MarkUsedRequest req,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(ideaService.markUsed(id, req.isUsed(), getUser(userDetails)));
+        return ResponseEntity.ok(scriptService.update(id, req, getUser(userDetails)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails userDetails) {
-        ideaService.delete(id, getUser(userDetails));
+        scriptService.delete(id, getUser(userDetails));
         return ResponseEntity.noContent().build();
     }
 }

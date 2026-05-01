@@ -22,6 +22,11 @@ public class IdeaDto {
     }
 
     @Data
+    public static class MarkUsedRequest {
+        private boolean used;
+    }
+
+    @Data
     public static class ExtractRequest {
         private String text;
         private String inputLang;
@@ -42,6 +47,7 @@ public class IdeaDto {
         private String ideaTr;
         private String inputLang;
         private String outputLang;
+        private boolean used;
         private LocalDateTime createdAt;
     }
 }

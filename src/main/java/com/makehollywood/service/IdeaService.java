@@ -181,6 +181,14 @@ public class IdeaService {
         return toResponse(ideaRepository.save(idea));
     }
 
+    public IdeaDto.Response markUsed(Long id, boolean used, User user) {
+        Idea idea = ideaRepository.findById(id)
+                .filter(i -> i.getUser().getId().equals(user.getId()))
+                .orElseThrow(() -> new RuntimeException("Idea not found"));
+        idea.setUsed(used);
+        return toResponse(ideaRepository.save(idea));
+    }
+
     public void delete(Long id, User user) {
         Idea idea = ideaRepository.findById(id)
                 .filter(i -> i.getUser().getId().equals(user.getId()))
@@ -196,6 +204,7 @@ public class IdeaService {
         r.setIdeaTr(idea.getIdeaTr());
         r.setInputLang(idea.getInputLang());
         r.setOutputLang(idea.getOutputLang());
+        r.setUsed(idea.isUsed());
         r.setCreatedAt(idea.getCreatedAt());
         return r;
     }

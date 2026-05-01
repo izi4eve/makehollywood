@@ -8,9 +8,9 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "ideas")
+@Table(name = "scripts")
 @Getter @Setter @NoArgsConstructor
-public class Idea {
+public class Script {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,11 +23,17 @@ public class Idea {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String source;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
-    private String idea;
+    @Column(name = "core_message", columnDefinition = "TEXT")
+    private String coreMessage;
 
-    @Column(name = "idea_tr", columnDefinition = "TEXT")
-    private String ideaTr;
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String fullText;
+
+    @Column(name = "full_text_tr", columnDefinition = "TEXT")
+    private String fullTextTr;
+
+    @Column(length = 255)
+    private String name;
 
     @Column(name = "input_lang", length = 10)
     private String inputLang;
@@ -39,4 +45,7 @@ public class Idea {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt = LocalDateTime.now();
 }
