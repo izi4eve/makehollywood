@@ -13,6 +13,8 @@ public class ScriptDto {
         private String coreMessage;
         private String inputLang;
         private String outputLang;
+        private String style;    // "spark" | "flow" | "expert" | "edge" | "story"
+        private String voice;    // "direct" | "neutral"
     }
 
     @Data

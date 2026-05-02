@@ -26,7 +26,37 @@ public class ScriptService {
 
     private static final int MAX_RETRIES = 2;
 
-    private static final String GENERATE_SYSTEM_PROMPT = """
+    private String buildSystemPrompt(String style, String voice, String outputLang) {
+        String styleBlock = switch (style == null ? "flow" : style) {
+            case "spark" -> """
+            Style: SHORT, PUNCHY sentences. Maximum 8 words per sentence. \
+            Escalating intensity — each block hits harder than the previous. \
+            Provocative, bold, no softening. Like 4 nails into a coffin: each one deeper.\
+            """;
+            case "expert" -> """
+            Style: Authoritative and confident. Lead with facts and specific data from the input. \
+            No emotional appeals — pure credibility and precision.\
+            """;
+            case "edge" -> """
+            Style: Contrarian and sarcastic. Challenge what everyone assumes is true. \
+            Dry wit, sharp edges. The viewer should feel slightly provoked.\
+            """;
+            case "story" -> """
+            Style: Personal narrative. Write as if recounting a real experience. \
+            Slow burn — build emotional connection before the payoff.\
+            """;
+            default -> """
+            Style: Smooth and conversational. Natural flow, relatable tone. \
+            Not too formal, not too aggressive.\
+            """;
+        };
+
+        String voiceBlock = switch (voice == null ? "neutral" : voice) {
+            case "direct" -> "Address the viewer directly as 'you'. Make it personal and immediate.";
+            default -> "Use impersonal phrasing. State facts and observations without direct address.";
+        };
+
+        return """
         You are a scriptwriter for viral YouTube Shorts, Reels, and TikToks.
         Your task: take the user's raw idea and write 3 distinct short-form video scripts.
 
@@ -38,11 +68,12 @@ public class ScriptService {
 
         Key rules:
         - The hook and bridge must NOT reveal the main point. The viewer should only get 50% of the answer by the bridge.
-        - Be direct and punchy. No filler, no fluff.
         - Each of the 3 scripts must use a different hook angle.
         - Determine the content type from the input (solution, personal story, experiment, myth-busting, secret, mistake, habit, top-list, stats, disagreement, rant) and shape the script accordingly.
         - Never invent statistics, studies, or facts not present in the user's input.
         - Generate a short name for each script (3-6 words, captures the core angle).
+
+        """ + styleBlock + "\n" + voiceBlock + """
 
         Return ONLY a valid JSON array. No explanation, no markdown, no extra text.
 
@@ -53,6 +84,7 @@ public class ScriptService {
           {"name": "...", "text": "...full script text..."}
         ]
         """;
+    }
 
     private static final String REFINE_SYSTEM_PROMPT = """
         You are a scriptwriter for viral YouTube Shorts, Reels, and TikToks.
@@ -74,7 +106,7 @@ public class ScriptService {
 
     public List<ScriptDto.GeneratedVariant> generate(ScriptDto.GenerateRequest req) {
         String input = buildGenerateInput(req);
-        String systemPrompt = GENERATE_SYSTEM_PROMPT
+        String systemPrompt = buildSystemPrompt(req.getStyle(), req.getVoice(), req.getOutputLang())
                 + "\nWrite all scripts in this language: " + req.getOutputLang();
 
         List<ScriptDto.GeneratedVariant> variants = generateWithRetry(systemPrompt, input);
